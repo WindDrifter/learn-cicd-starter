@@ -75,6 +75,17 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	})
+	router.Get("//", func(w http.ResponseWriter, r *http.Request) {
+		f, err := staticFiles.Open("static/index.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer f.Close()
+		if _, err := io.Copy(w, f); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
 
 	v1Router := chi.NewRouter()
 
@@ -91,6 +102,7 @@ func main() {
 	srv := &http.Server{
 		Addr:    ":" + port,
 		Handler: router,
+		ReadHeaderTimeout: 1000,
 	}
 
 	log.Printf("Serving on port: %s\n", port)
